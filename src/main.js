@@ -1,5 +1,5 @@
-// ======= Pobieranie elementów DOM =======
 const jacketList = document.querySelector(".jacket__list");
+
 const select = document.querySelector(".jacket__list-select");
 const selected = document.querySelector(".jacket__list-selected");
 const optionsContainer = document.querySelector(".jacket__list-options");
@@ -13,14 +13,13 @@ const featuredSection = document.getElementById("featured-section");
 const porductSection = document.getElementById("jacket-section");
 const navLinks = document.querySelectorAll(".nav__link-list a");
 const metaDescription = document.querySelector("#dynamic-description");
-
 let pageNumber = 1;
 let pageSize = 14;
 let throttleTimer;
 let loading = false;
 let firstBanner = true;
 
-// ======= Obsługa ikony (hover i klik) =======
+//  changes heart-icon on hover and on click
 heartList.forEach((heart) => {
   heart.dataset.liked = "false";
 
@@ -43,7 +42,7 @@ heartList.forEach((heart) => {
   });
 });
 
-// ======= Funkcja opóźniająca wykonanie (debounce) =======
+// ***************************************************utils****************************************************************//
 const debounce = (callback, wait) => {
   let timeoutId = null;
   return (...args) => {
@@ -54,7 +53,7 @@ const debounce = (callback, wait) => {
   };
 };
 
-// ======= Lazy loading (ładowanie zawartości przy scrollu) =======
+// lazy loading
 const listObserver = new IntersectionObserver(
   (entries) => {
     entries.forEach((entry) => {
@@ -69,8 +68,7 @@ const listObserver = new IntersectionObserver(
     threshold: 1,
   }
 );
-
-// ======= Aktualizacja meta tagów i adresu przy scrollu =======
+// oberver changes meta description and title
 const observer = new IntersectionObserver(
   (entries) => {
     entries.forEach((entry) => {
@@ -86,6 +84,7 @@ const observer = new IntersectionObserver(
           const description = topSection.getAttribute("data-description");
 
           if (title) document.title = title;
+
           if (metaDescription && description) {
             metaDescription.setAttribute("content", description);
           }
@@ -100,9 +99,10 @@ const observer = new IntersectionObserver(
   }
 );
 
-// ======= Konfiguracja Swipera (karuzela) =======
+// swipe --------------------
 const swiper = new Swiper(".swiper", {
   slidesPerView: "auto",
+
   loop: true,
   navigation: {
     nextEl: ".featured__button-next",
@@ -111,6 +111,9 @@ const swiper = new Swiper(".swiper", {
     el: ".swiper-scrollbar",
   },
   breakpoints: {
+    // 100: {
+    //   spaceBetween: 16,
+    // },
     600: {
       slidesPerView: "auto",
     },
@@ -120,7 +123,6 @@ const swiper = new Swiper(".swiper", {
   },
 });
 
-// ======= Funkcja ograniczająca częstotliwość (throttle) =======
 const throttle = (callback, time) => {
   if (throttleTimer) return;
   throttleTimer = true;
@@ -130,22 +132,27 @@ const throttle = (callback, time) => {
   }, time);
 };
 
-// ======= Pobieranie danych z API =======
+// function that fetches data from api--------------
 const fetchData = async (pageSize, pageNumber) => {
   const result = await fetch(
     `https://brandstestowy.smallhost.pl/api/random?pageNumber=${pageNumber}&pageSize=${pageSize}`
   )
-    .then((res) => res.json())
-    .then((data) => data);
+    .then((res) => {
+      return res.json();
+    })
+    .then((data) => {
+      return data;
+    });
   return result.data;
 };
-
 const indexBanner = () => {
   const width = window.innerWidth;
-  return width < 1024 ? 3 : 4;
+  if (width < 1024) return 3;
+  return 4;
 };
+//*******************************************************************************************************************/
 
-// ======= Tworzenie listy kurtek =======
+// function that creates jacket list -----------------------------------------------------------------
 const createJacketList = async (pageSize = 14, pageNumber = 1) => {
   if (loading) return;
   loading = true;
@@ -155,42 +162,36 @@ const createJacketList = async (pageSize = 14, pageNumber = 1) => {
   result.forEach((el, index) => {
     const jacket = document.createElement("li");
     jacket.classList.add("jacket__list-img-box");
-    jacket.innerHTML = `
-      <div data-id=${el.id} class="jacket__list-img-id">ID: ${el.id}</div>
-      <img loading="lazy" class="jacket__list-img" src="${el.image}" alt="profesjonalna kurtka alpinistyczna"/>
-    `;
+    jacket.innerHTML = `<div data-id=${el.id} class="jacket__list-img-id">ID: ${el.id}</div><img loading="lazy" class="jacket__list-img" src="${el.image}"  alt="profesjonalna kurtka alpinistyczna"/>`;
     jacket.addEventListener("click", () => {
       const jacketModalContent = document.createElement("div");
       jacketModalContent.classList.add("jacket__modal-content");
-      jacketModalContent.innerHTML = `
-        <div class="modal__header-close jacket__modal-close">
-          <div class="modal__header-close-img-wrapper">
-            <img data-value="close" loading="lazy" src="images/iconX.svg" alt="" />
+      jacketModalContent.innerHTML = `<div class="modal__header-close jacket__modal-close">
+            <div class="modal__header-close-img-wrapper">
+              <img
+                data-value="close"
+                loading="lazy"
+                src="images/iconX.svg"
+                alt=""
+              />
+            </div>
+            <div data-value="close">CLOSE</div>
           </div>
-          <div data-value="close">CLOSE</div>
-        </div>
-        <div data-id=${el.id} class="jacket__modal-img-id">ID: ${el.id}</div>
-        <img loading="lazy" class="jacket__modal-img" src="${el.image}" alt="sportowiec zjeżdzający na nartach w turkusowej kurtce" />
-      `;
+          <div data-id=${el.id} class="jacket__modal-img-id">ID: ${el.id}</div>
+          <img loading="lazy" class="jacket__modal-img" src="${el.image}" alt="sportowiec zjeżdzający na nartach w turkusowej kurtce" />`;
       jacketModal.replaceChildren(jacketModalContent);
+
       jacketModal.classList.add("active");
     });
     jacketList.appendChild(jacket);
-
     if (index === bannerIndex && firstBanner) {
       const banner = document.createElement("li");
       banner.classList.add("jacket__list-banner");
-      banner.innerHTML = `
-        <div class="banner-headline-wrapper">
-          <h2 class="banner-headline-name">FORMAS'INT.</h2>
-          <p class="banner-headline-info">You'll look and feel like the champion.</p>
-        </div>
-        <button class="banner-button">CHECK THIS OUT
-          <div class="banner-img-wrapper">
-            <img loading="lazy" src="images/buttonArrow.svg" />
-          </div>
-        </button>
-      `;
+      banner.innerHTML = `<div class="banner-headline-wrapper">
+      <h2 class="banner-headline-name">FORMAS'INT.</h2>
+      <p class="banner-headline-info">You'll look and feel like the champion.</p>
+      </div>
+      <button class="banner-button">CHECK THIS OUT<div class="banner-img-wrapper"><img loading="lazy" src="images/buttonArrow.svg" /></div></button>`;
       jacketList.appendChild(banner);
       firstBanner = false;
     }
@@ -198,8 +199,9 @@ const createJacketList = async (pageSize = 14, pageNumber = 1) => {
   loading = false;
   listObserver.disconnect();
 };
+// ---------------------------------------------------------------------------
 
-// ======= Nieskończone przewijanie (infinity scroll) =======
+// infinity scroll -----------------------------------------------------------
 window.addEventListener("scroll", () => {
   throttle(() => {
     if (
@@ -211,31 +213,34 @@ window.addEventListener("scroll", () => {
     }
   }, 1000);
 });
-
-const handleResize = debounce(() => {
+const handleResize = debounce((resizeEvent) => {
   jacketList.innerHTML = "";
   firstBanner = true;
   createJacketList();
 }, 1000);
 window.addEventListener("resize", handleResize);
+// ----------------------------------------------------------------------------
 
-// ======= Obsługa selecta =======
+// Select----------------------------------------------------------------------
 const optionsArray = [14, 24, 36];
 select.addEventListener("click", function () {
   let index = 0;
   select.classList.toggle("jacket__list-select-active");
   if (optionsContainer.innerHTML === "") {
     optionsArray.forEach((option) => {
-      if (option === pageSize) return;
+      if (option === pageSize) {
+        return;
+      }
       const optionEl = document.createElement("div");
+
       optionEl.classList.add("jacket__list-option");
       optionEl.setAttribute("data-value", option);
       optionEl.innerText = option;
-
-      if (index === 0) {
+      // licze index by dodać border pomiędzy pierwszym i drugim elementem selekta który będzie, nie uzywam index w foreach aby nie tworzyła mi się kreska w elemencie który nie będzie istnieć w DOM
+      if (index == 0) {
         optionEl.classList.add("product-list-first-option");
       }
-      index += 1;
+      index = +1;
 
       optionsContainer.appendChild(optionEl);
 
@@ -262,8 +267,9 @@ document.addEventListener("click", (e) => {
     select.classList.remove("jacket__list-select-active");
   }
 });
+// ---------------------------------------------------------------------------
 
-// ======= Obsługa modali =======
+// modal----------------------------------------------------------------------
 const modalClose = (e) => {
   if (e.target.getAttribute("data-value") === "close") {
     e.currentTarget.classList.remove("active");
@@ -273,12 +279,14 @@ modal.addEventListener("click", modalClose);
 menuModalOpen.addEventListener("click", () => {
   modal.classList.add("active");
 });
+
 jacketModal.addEventListener("click", modalClose);
 
-// ======= Sekcje do obserwacji scrolla =======
 const sections = [heroSection, featuredSection, porductSection];
+// ---------------------------------------------------------------------------
 
-// ======= Podświetlanie aktywnego linku w nawigacji =======
+// highlights links in header when section is in view ------------------------
+
 function checkSection() {
   let currentIndex = -1;
 
@@ -298,7 +306,6 @@ function checkSection() {
 }
 window.addEventListener("scroll", checkSection);
 
-// ======= Uruchomienie obserwatorów =======
 listObserver.observe(jacketList);
 sections.forEach((section) => {
   observer.observe(section);
